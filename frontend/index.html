@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Peta Potensi Ikan</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      #map {
+        height: 90vh;
+        width: 100%;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Peta Potensi Ikan</h2>
+    <div id="map"></div>
+    <button onclick="logout()">Logout</button>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      const map = L.map("map").setView([-6.2, 106.8], 10);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+
+      fetch("http://localhost:5000/api/fish-locations", {
+        method: "GET",
+        credentials: "include",
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            alert("Session habis. Silakan login ulang.");
+            window.location.href = "login.html";
+            return;
+          }
+          return res.json();
+        })
+        .then((data) => {
+          data.locations.forEach((loc) => {
+            L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.info);
+          });
+        });
+
+      function logout() {
+        fetch("http://localhost:5000/api/logout", {
+          method: "POST",
+          credentials: "include",
+        }).then(() => (window.location.href = "login.html"));
+      }
+    </script>
+  </body>
+</html>
